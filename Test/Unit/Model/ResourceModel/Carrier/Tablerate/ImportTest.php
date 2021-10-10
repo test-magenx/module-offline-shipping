@@ -60,7 +60,7 @@ class ImportTest extends TestCase
     private $dataHashGeneratorMock;
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function setUp(): void
     {
@@ -75,7 +75,7 @@ class ImportTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->columnResolverFactoryMock = $this->getMockBuilder(ColumnResolverFactory::class)
-            ->onlyMethods(['create'])
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->dataHashGeneratorMock = $this->getMockBuilder(DataHashGenerator::class)
@@ -101,7 +101,7 @@ class ImportTest extends TestCase
     /**
      * @return void
      */
-    public function testGetColumns(): void
+    public function testGetColumns()
     {
         $columns = ['column_1', 'column_2'];
         $this->rowParserMock->expects($this->once())
@@ -114,7 +114,7 @@ class ImportTest extends TestCase
     /**
      * @return void
      */
-    public function testGetData(): void
+    public function testGetData()
     {
         $lines = [
             ['header_1', 'header_2', 'header_3', 'header_4', 'header_5'],
@@ -122,7 +122,7 @@ class ImportTest extends TestCase
             ['a2', 'b2', 'c2', 'd2', 'e2'],
             ['a3', 'b3', 'c3', 'd3', 'e3'],
             ['a4', 'b4', 'c4', 'd4', 'e4'],
-            ['a5', 'b5', 'c5', 'd5', 'e5']
+            ['a5', 'b5', 'c5', 'd5', 'e5'],
         ];
         $this->rowParserMock->expects($this->any())
             ->method('parse')
@@ -137,11 +137,11 @@ class ImportTest extends TestCase
         $expectedResult = [
             [
                 $lines[1],
-                $lines[2]
+                $lines[2],
             ],
             [
                 $lines[3],
-                $lines[4]
+                $lines[4],
             ],
             [
                 $lines[5]
@@ -169,14 +169,14 @@ class ImportTest extends TestCase
     /**
      * @return void
      */
-    public function testGetDataWithDuplicatedLine(): void
+    public function testGetDataWithDuplicatedLine()
     {
         $lines = [
             ['header_1', 'header_2', 'header_3', 'header_4', 'header_5'],
             ['a1', 'b1', 'c1', 'd1', 'e1'],
             ['a1', 'b1', 'c1', 'd1', 'e1'],
             [],
-            ['a2', 'b2', 'c2', 'd2', 'e2']
+            ['a2', 'b2', 'c2', 'd2', 'e2'],
         ];
         $this->rowParserMock->expects($this->any())
             ->method('parse')
@@ -189,8 +189,8 @@ class ImportTest extends TestCase
         $expectedResult = [
             [
                 $lines[1],
-                $lines[4]
-            ]
+                $lines[4],
+            ],
         ];
 
         $columnResolver = $this->getMockBuilder(ColumnResolver::class)
@@ -212,10 +212,9 @@ class ImportTest extends TestCase
     }
 
     /**
-     * @return void
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
-    public function testGetDataFromEmptyFile(): void
+    public function testGetDataFromEmptyFile()
     {
         $this->expectException('Magento\Framework\Exception\LocalizedException');
         $this->expectExceptionMessage('The Table Rates File Format is incorrect. Verify the format and try again.');
@@ -228,24 +227,23 @@ class ImportTest extends TestCase
 
     /**
      * @param array $lines
-     *
      * @return ReadInterface|MockObject
      */
-    private function createFileMock(array $lines): MockObject
+    private function createFileMock(array $lines)
     {
         $file = $this->getMockBuilder(ReadInterface::class)
-            ->onlyMethods(['readCsv'])
+            ->setMethods(['readCsv'])
             ->getMockForAbstractClass();
-        $willReturnArgs = [];
-
+        $i = 0;
         foreach ($lines as $line) {
-            $willReturnArgs[] = $line;
+            $file->expects($this->at($i))
+                ->method('readCsv')
+                ->willReturn($line);
+            $i++;
         }
-        $willReturnArgs[] = false;
-        $file
+        $file->expects($this->at($i))
             ->method('readCsv')
-            ->willReturnOnConsecutiveCalls(...$willReturnArgs);
-
+            ->willReturn(false);
         return $file;
     }
 }

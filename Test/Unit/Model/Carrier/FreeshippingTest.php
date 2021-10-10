@@ -80,7 +80,7 @@ class FreeshippingTest extends TestCase
             [
                 'scopeConfig' => $this->scopeConfigMock,
                 '_rateResultFactory' => $this->resultFactoryMock,
-                '_rateMethodFactory' => $this->methodFactoryMock
+                '_rateMethodFactory' => $this->methodFactoryMock,
             ]
         );
     }
@@ -113,50 +113,39 @@ class FreeshippingTest extends TestCase
                     'getPackageQty',
                     'getFreeShipping',
                     'getBaseSubtotalWithDiscountInclTax',
-                    'getPackageValueWithDiscount'
+                    'getPackageValueWithDiscount',
                 ]
             )
             ->getMock();
         $item = $this->getMockBuilder(QuoteItem::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->scopeConfigMock
+        $this->scopeConfigMock->expects($this->at(0))
             ->method('isSetFlag')
-            ->withConsecutive(
-                [],
-                [
-                    'carriers/freeshipping/tax_including',
-                    ScopeInterface::SCOPE_STORE, null
-                ]
+            ->willReturn(true);
+        $this->scopeConfigMock->expects($this->at(1))
+            ->method('isSetFlag')
+            ->with(
+                'carriers/freeshipping/tax_including',
+                ScopeInterface::SCOPE_STORE,
+                null
             )
-            ->willReturnOnConsecutiveCalls(true, $subtotalInclTax);
-
-        $this->scopeConfigMock
+            ->willReturn($subtotalInclTax);
+        $this->scopeConfigMock->expects($this->at(2))
             ->method('getValue')
-            ->withConsecutive(
-                [
-                    'carriers/freeshipping/free_shipping_subtotal',
-                    ScopeInterface::SCOPE_STORE,
-                    null
-                ]
+            ->with(
+                'carriers/freeshipping/free_shipping_subtotal',
+                ScopeInterface::SCOPE_STORE,
+                null
             )
-            ->willReturnOnConsecutiveCalls($minOrderAmount);
+            ->willReturn($minOrderAmount);
         $method = $this->getMockBuilder(Method::class)
             ->disableOriginalConstructor()
-            ->addMethods(
-                [
-                    'setCarrier',
-                    'setCarrierTitle',
-                    'setMethod',
-                    'setMethodTitle',
-                    'setCost'
-                ]
-            )
-            ->onlyMethods([ 'setPrice'])
+            ->setMethods(['setCarrier', 'setCarrierTitle', 'setMethod', 'setMethodTitle', 'setPrice', 'setCost'])
             ->getMock();
         $resultModel = $this->getMockBuilder(Result::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['append'])
+            ->setMethods(['append'])
             ->getMock();
         $this->resultFactoryMock->method('create')
             ->willReturn($resultModel);
@@ -188,7 +177,7 @@ class FreeshippingTest extends TestCase
                 'minOrderAmount' => 10,
                 'packageValueWithDiscount' => 8,
                 'baseSubtotalWithDiscountInclTax' => 15,
-                'expectedCallAppend' => $this->once()
+                'expectedCallAppend' => $this->once(),
 
             ],
             [
@@ -196,7 +185,7 @@ class FreeshippingTest extends TestCase
                 'minOrderAmount' => 20,
                 'packageValueWithDiscount' => 8,
                 'baseSubtotalWithDiscountInclTax' => 15,
-                'expectedCallAppend' => $this->never()
+                'expectedCallAppend' => $this->never(),
 
             ],
             [
@@ -204,9 +193,9 @@ class FreeshippingTest extends TestCase
                 'minOrderAmount' => 10,
                 'packageValueWithDiscount' => 8,
                 'baseSubtotalWithDiscountInclTax' => 15,
-                'expectedCallAppend' => $this->never()
+                'expectedCallAppend' => $this->never(),
 
-            ]
+            ],
         ];
     }
 }
